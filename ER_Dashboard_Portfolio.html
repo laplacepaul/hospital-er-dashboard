@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hospital ER Dashboard — Paul Adeyemi</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal: #1e7f78;
+    --teal-light: #2da89e;
+    --teal-pale: #e8f6f5;
+    --teal-mid: #b2deda;
+    --dark: #0d1f1e;
+    --text: #1a2e2d;
+    --muted: #4a6b69;
+    --card-bg: #ffffff;
+    --bg: #f4fafa;
+    --accent: #e85d26;
+    --border: #c8e8e5;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* HERO */
+  .hero {
+    background: var(--dark);
+    padding: 80px 60px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(30,127,120,0.35) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: 20%;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(45,168,158,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-tag {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--teal-light);
+    border: 1px solid rgba(45,168,158,0.4);
+    padding: 5px 12px;
+    border-radius: 2px;
+    margin-bottom: 28px;
+  }
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(36px, 5vw, 60px);
+    color: #ffffff;
+    line-height: 1.1;
+    max-width: 700px;
+    margin-bottom: 20px;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--teal-light);
+  }
+  .hero-sub {
+    font-size: 16px;
+    color: rgba(255,255,255,0.6);
+    font-weight: 300;
+    max-width: 560px;
+    line-height: 1.7;
+    margin-bottom: 40px;
+  }
+  .hero-meta {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .meta-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+  }
+  .meta-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.85);
+  }
+
+  /* STATS BAR */
+  .stats-bar {
+    background: var(--teal);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+  }
+  .stat-cell {
+    padding: 28px 32px;
+    border-right: 1px solid rgba(255,255,255,0.15);
+    animation: fadeUp 0.6s ease both;
+  }
+  .stat-cell:last-child { border-right: none; }
+  .stat-cell:nth-child(1) { animation-delay: 0.1s; }
+  .stat-cell:nth-child(2) { animation-delay: 0.2s; }
+  .stat-cell:nth-child(3) { animation-delay: 0.3s; }
+  .stat-cell:nth-child(4) { animation-delay: 0.4s; }
+  .stat-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 34px;
+    color: #fff;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-desc {
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    font-weight: 400;
+    letter-spacing: 0.03em;
+  }
+
+  /* MAIN CONTENT */
+  .main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 64px 40px;
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 10px;
+  }
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 30px;
+    color: var(--dark);
+    margin-bottom: 32px;
+  }
+
+  /* OVERVIEW */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 40px;
+    margin-bottom: 72px;
+    align-items: start;
+  }
+  .overview-text p {
+    font-size: 15.5px;
+    line-height: 1.8;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .overview-text p strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .sidebar-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px;
+  }
+  .sidebar-card h4 {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    background: var(--teal-pale);
+    color: var(--teal);
+    border: 1px solid var(--teal-mid);
+    padding: 4px 10px;
+    border-radius: 3px;
+  }
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 20px 0;
+  }
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--teal-pale);
+    font-size: 13px;
+  }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-row .key { color: var(--muted); font-weight: 400; }
+  .detail-row .val { color: var(--text); font-weight: 600; }
+
+  /* FINDINGS */
+  .findings-section { margin-bottom: 72px; }
+  .findings-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .finding-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .finding-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(30,127,120,0.12);
+  }
+  .finding-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--teal);
+  }
+  .finding-card.alert::before { background: var(--accent); }
+  .finding-icon {
+    width: 40px; height: 40px;
+    border-radius: 8px;
+    background: var(--teal-pale);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+  .finding-card.alert .finding-icon {
+    background: #fdf0ea;
+  }
+  .finding-card h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 10px;
+    letter-spacing: 0.01em;
+  }
+  .finding-card p {
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+  .finding-card p strong {
+    color: var(--teal);
+    font-weight: 600;
+  }
+  .finding-card.alert p strong {
+    color: var(--accent);
+  }
+
+  /* DASHBOARD VIEWS */
+  .views-section { margin-bottom: 72px; }
+  .views-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  .view-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: box-shadow 0.2s ease;
+  }
+  .view-card:hover {
+    box-shadow: 0 8px 24px rgba(30,127,120,0.1);
+  }
+  .view-header {
+    background: var(--dark);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .view-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--teal-light);
+  }
+  .view-header span {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 0.08em;
+  }
+  .view-body {
+    padding: 20px;
+  }
+  .view-body h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .view-body p {
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
+  /* IMPACT */
+  .impact-section { margin-bottom: 72px; }
+  .impact-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .impact-item {
+    border-left: 3px solid var(--teal);
+    padding: 16px 20px;
+    background: var(--card-bg);
+    border-radius: 0 6px 6px 0;
+  }
+  .impact-item .num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    color: var(--teal);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .impact-item .label {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* FOOTER */
+  .portfolio-footer {
+    background: var(--dark);
+    padding: 40px 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: gap;
+  }
+  .footer-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: #fff;
+  }
+  .footer-name span { color: var(--teal-light); }
+  .footer-links {
+    display: flex;
+    gap: 20px;
+  }
+  .footer-links a {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--teal-light); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 768px) {
+    .hero { padding: 48px 24px 40px; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .main { padding: 40px 20px; }
+    .overview-grid { grid-template-columns: 1fr; }
+    .findings-grid { grid-template-columns: 1fr; }
+    .views-grid { grid-template-columns: 1fr; }
+    .impact-grid { grid-template-columns: repeat(2, 1fr); }
+    .portfolio-footer { flex-direction: column; gap: 16px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-tag">Portfolio · Healthcare Analytics</div>
+  <h1>Hospital <em>Emergency Room</em> Dashboard</h1>
+  <p class="hero-sub">A comprehensive Power BI analytics solution monitoring patient flow, wait times, admission patterns, and department referrals across a 19-month period — designed to surface operational inefficiencies and inform resource planning.</p>
+  <div class="hero-meta">
+    <div class="meta-item">
+      <span class="meta-label">Tool</span>
+      <span class="meta-value">Power BI</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Period</span>
+      <span class="meta-value">Apr 2023 – Oct 2024</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Domain</span>
+      <span class="meta-value">Healthcare Operations</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Author</span>
+      <span class="meta-value">Paul Adeyemi</span>
+    </div>
+  </div>
+</header>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat-cell">
+    <div class="stat-num">9,216</div>
+    <div class="stat-desc">Unique patients analyzed</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-num">35.3<span style="font-size:18px"> min</span></div>
+    <div class="stat-desc">Avg wait time (target: 30 min)</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-num">4.99<span style="font-size:18px">/10</span></div>
+    <div class="stat-desc">Avg patient satisfaction score</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-num">59.3<span style="font-size:18px">%</span></div>
+    <div class="stat-desc">Patients seen within 30 min target</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- OVERVIEW -->
+  <section style="margin-bottom: 72px;">
+    <div class="section-label">Project Overview</div>
+    <div class="section-title">Why This Dashboard Matters</div>
+    <div class="overview-grid">
+      <div class="overview-text">
+        <p>Emergency rooms operate under constant pressure — limited beds, unpredictable patient volumes, and strict care time targets. Without real-time visibility into operational metrics, hospitals struggle to allocate staff efficiently or identify where patient experience breaks down.</p>
+        <p>This dashboard was built to give hospital administrators a <strong>clear, data-driven view</strong> of ER performance across 9,216 patient visits. By combining monthly snapshots with a consolidated multi-year view, it enables both day-to-day operational decisions and long-term strategic planning.</p>
+        <p>The analysis revealed that <strong>average wait times exceed the 30-minute target</strong>, that <strong>40.68% of patients miss the timeliness benchmark</strong>, and that demand peaks sharply on Mondays and during late-night hours — all actionable findings for resource optimization.</p>
+      </div>
+      <div class="sidebar-card">
+        <h4>Tech Stack</h4>
+        <div class="tag-list">
+          <span class="tag">Power BI</span>
+          <span class="tag">Power Query</span>
+          <span class="tag">DAX</span>
+          <span class="tag">Data Modeling</span>
+          <span class="tag">Data Visualization</span>
+        </div>
+        <div class="divider"></div>
+        <h4>Key Metrics Tracked</h4>
+        <div class="detail-row"><span class="key">Patient Volume</span><span class="val">9,216</span></div>
+        <div class="detail-row"><span class="key">Referral Rate</span><span class="val">41.4%</span></div>
+        <div class="detail-row"><span class="key">Admission Rate</span><span class="val">49.16%</span></div>
+        <div class="detail-row"><span class="key">Within-Target Rate</span><span class="val">59.32%</span></div>
+        <div class="detail-row"><span class="key">Data Timespan</span><span class="val">19 months</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KEY FINDINGS -->
+  <section class="findings-section">
+    <div class="section-label">Analysis</div>
+    <div class="section-title">Key Findings</div>
+    <div class="findings-grid">
+      <div class="finding-card alert">
+        <div class="finding-icon">⚠️</div>
+        <h3>Wait Time Target Missed</h3>
+        <p>Average wait time of <strong>35.3 minutes</strong> consistently exceeds the hospital's 30-minute benchmark. <strong>40.68%</strong> of all patients across 19 months did not receive care within the target window.</p>
+      </div>
+      <div class="finding-card">
+        <div class="finding-icon">📅</div>
+        <h3>Peak Demand Patterns</h3>
+        <p><strong>Mondays (1,377 patients)</strong> are the busiest day, followed by Saturdays and Tuesdays. Peak hours cluster at <strong>7 AM, 11 AM, 1 PM, and 11 PM</strong> — requiring proactive staffing plans.</p>
+      </div>
+      <div class="finding-card">
+        <div class="finding-icon">🏥</div>
+        <h3>Referral Distribution</h3>
+        <p><strong>58.6% of patients</strong> required departmental referrals. General Practice absorbed the largest share (1,840), followed by Orthopedics (995), Physiotherapy (276), and Cardiology (248).</p>
+      </div>
+      <div class="finding-card">
+        <div class="finding-icon">👥</div>
+        <h3>Demographics</h3>
+        <p>Adults aged <strong>30–39</strong> form the largest cohort (1,200 patients). The patient population is racially diverse, with White (2,571), African American (1,951), Multiracial (1,557), and Asian (1,060) patients represented.</p>
+      </div>
+      <div class="finding-card">
+        <div class="finding-icon">📊</div>
+        <h3>Admission Patterns</h3>
+        <p>Nearly half of all patients — <strong>49.16% (4,612)</strong> — were admitted for inpatient care, while 50.84% were treated and discharged. The near-even split indicates high case severity in the ER population.</p>
+      </div>
+      <div class="finding-card">
+        <div class="finding-icon">⭐</div>
+        <h3>Satisfaction Scores</h3>
+        <p>Average patient satisfaction sits at <strong>4.99 out of 10</strong>, indicating moderate dissatisfaction. Combined with wait time overruns, this points to patient experience as a key improvement area.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD VIEWS -->
+  <section class="views-section">
+    <div class="section-label">Dashboard Design</div>
+    <div class="section-title">Four-View Architecture</div>
+    <div class="views-grid">
+      <div class="view-card">
+        <div class="view-header"><div class="view-dot"></div><span>VIEW 01 — MONTHLY</span></div>
+        <div class="view-body">
+          <h4>Monthly Performance Monitor</h4>
+          <p>Time-filtered view of all KPIs for a selected month. Tracks patient volumes, wait times, satisfaction scores, and referral patterns. Enables month-over-month comparison and quick operational status checks.</p>
+        </div>
+      </div>
+      <div class="view-card">
+        <div class="view-header"><div class="view-dot"></div><span>VIEW 02 — CONSOLIDATED</span></div>
+        <div class="view-body">
+          <h4>Full-Period Trend Analysis</h4>
+          <p>Aggregated view across the entire Apr 2023–Oct 2024 dataset. Reveals long-term trends, seasonal patterns, and systemic performance gaps — designed for strategic and executive reporting.</p>
+        </div>
+      </div>
+      <div class="view-card">
+        <div class="view-header"><div class="view-dot"></div><span>VIEW 03 — PATIENT DETAILS</span></div>
+        <div class="view-body">
+          <h4>Granular Patient Records</h4>
+          <p>Drill-down table with individual patient records: ID, demographics, wait time, referral department, and admission status. Supports case-level investigation and data validation.</p>
+        </div>
+      </div>
+      <div class="view-card">
+        <div class="view-header"><div class="view-dot"></div><span>VIEW 04 — KEY TAKEAWAYS</span></div>
+        <div class="view-body">
+          <h4>Executive Summary Page</h4>
+          <p>Narrative analysis translating raw data into actionable insights for non-technical stakeholders. Covers wait time issues, peak periods, referral patterns, demographics, and admission outcomes in plain language.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- IMPACT -->
+  <section class="impact-section">
+    <div class="section-label">Impact & Outcomes</div>
+    <div class="section-title">What This Enables</div>
+    <div class="impact-grid">
+      <div class="impact-item">
+        <div class="num">40.7%</div>
+        <div class="label">of patients missing target — a quantified gap for quality improvement initiatives</div>
+      </div>
+      <div class="impact-item">
+        <div class="num">7 depts</div>
+        <div class="label">mapped for referral optimization and cross-department capacity planning</div>
+      </div>
+      <div class="impact-item">
+        <div class="num">168 hrs</div>
+        <div class="label">of weekly coverage analyzed in the day/hour heatmap for smarter staffing</div>
+      </div>
+      <div class="impact-item">
+        <div class="num">4 views</div>
+        <div class="label">covering operational, strategic, and executive reporting needs in one dashboard</div>
+      </div>
+      <div class="impact-item">
+        <div class="num">19 mo.</div>
+        <div class="label">of longitudinal data enabling trend detection beyond single-month snapshots</div>
+      </div>
+      <div class="impact-item">
+        <div class="num">9,216</div>
+        <div class="label">unique patient records cleaned, modeled, and analyzed end-to-end</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="portfolio-footer" style="background:#0d1f1e; padding: 40px 60px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+  <div class="footer-name">Paul <span>Adeyemi</span></div>
+  <div class="footer-links">
+    <a href="mailto:Paul2001.timilehin@gmail.com">paul2001.timilehin@gmail.com</a>
+    <a href="https://linkedin.com/in/paul-adeyemi-836b4a23" target="_blank">LinkedIn</a>
+    <a href="https://github.com/laplacepaul" target="_blank">GitHub</a>
+  </div>
+</footer>
+
+</body>
+</html>
